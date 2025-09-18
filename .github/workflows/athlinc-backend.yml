@@ -1,0 +1,37 @@
+# name: athlinc-api deployment
+# on: 
+#     push:
+#         branches: ["dev"]
+# jobs:
+#   api-deploy:
+#     runs-on: ubuntu-latest
+#     container: osamamuhammad25/web:node18.19.0
+#     steps:
+#       - uses: actions/checkout@v4
+#       - name: Install npm dependencies
+#         run: npm install --force
+#       - name: Run build task
+#         run: npm run db:generate && npm run build
+#       - name: Server setup
+#         run: |
+#             cp .env.dev .env
+#             cp docker-compose.dev.yml docker-compose.yml
+#             echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem && chmod 600 private_key.pem
+#             ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@3.225.84.226 "cd ~ && sudo mkdir -p athlinc-api && sudo chown -R ubuntu:ubuntu athlinc-api && sudo chmod 755 athlinc-api"
+#       - name: Deploy to Server
+#         uses: easingthemes/ssh-deploy@main
+#         with:
+#           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+#           ARGS: "-av"
+#           SOURCE: "docker-compose.yml package.json package-lock.json .env dist prisma ecosystem.config.js"
+#           REMOTE_HOST: "3.225.84.226"
+#           REMOTE_USER: "ubuntu"
+#           TARGET: "~/athlinc-api"
+#       - name: Run application
+#         run: |
+#             ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@3.225.84.226 "cd ~/athlinc-api && npm install"
+#             ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@3.225.84.226 "cd ~/athlinc-api && docker volume create --name=athlinc_postgres_data && docker volume create --name=athlinc_redis_data"
+#             ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@3.225.84.226 "cd ~/athlinc-api && docker compose up -d"
+#             ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@3.225.84.226 "cd ~/athlinc-api && npm run db:deploy && npm run db:generate"
+#             ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@3.225.84.226 "cd ~/athlinc-api && pm2 start ecosystem.config.js"
+      

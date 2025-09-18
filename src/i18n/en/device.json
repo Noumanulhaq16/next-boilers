@@ -1,0 +1,4 @@
+{
+    "device.not_found": "Device not found",
+    "device.fcm_updated": "FCM token updated successfully"
+}

@@ -1,0 +1,556 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// generator client {
+//   provider        = "prisma-client-js"
+//   previewFeatures = ["interactiveTransactions", "fullTextSearch", "orderByNulls"]
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Add custom models here
+
+enum UserType {
+  ADMIN
+  COACH
+  ATHLETE
+}
+
+enum UserStatus {
+  REGISTERING
+  ACTIVE
+  INACTIVE
+  PENDING
+  BLOCKED
+}
+
+enum UserGender {
+  MALE
+  FEMALE
+}
+
+enum UserGrade {
+  FRESHMAN
+  SOPHOMORE
+  JUNIOR
+  SENIOR
+  JUCO
+}
+
+model User {
+  id                       Int                   @id @default(autoincrement())
+  email                    String
+  password                 String?
+  firstName                String?
+  lastName                 String?
+  phone                    String?
+  type                     UserType              @default(ATHLETE)
+  status                   UserStatus            @default(REGISTERING)
+  gender                   UserGender?
+  age                      Int?
+  weight                   Float?
+  height                   Float?
+  about                    String?
+  profilePictureId         Int?
+  isOnline                 Boolean               @default(false)
+  lastSeenAt               DateTime?             @db.Timestamptz()
+  meta                     Json?                 @db.JsonB
+  createdAt                DateTime              @default(now()) @db.Timestamptz()
+  updatedAt                DateTime              @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt                DateTime?             @db.Timestamptz()
+  isBlocked                Boolean               @default(false)
+  profilePicture           Media?                @relation(fields: [profilePictureId], references: [id])
+  devices                  Device[]
+  tokens                   Token[]
+  medias                   Media[]               @relation("MediaOwner")
+  settings                 UserSettings?
+  oauth                    UserOAuth?
+  addressInfo              AddressInfo?
+  userInfo                 UserInfo?
+  notifications            UsersNotifications[]
+  workHistories            WorkHistory[]
+  educationHistories       EducationHistory[]
+  achievements             Achievement[]
+  certificates             Certificate[]
+  galleryMedias            GalleryMedia[]
+  reportsGiven             Report[]              @relation("Reporter")
+  reportsTaken             Report[]              @relation("ReportedUser")
+  chatParticipants         ChatParticipant[]
+  subjectUserRelationships UserRelationship[]    @relation("SubjectUser")
+  objectUserRelationships  UserRelationship[]    @relation("ObjectUser")
+  subjectUserInteractions  UserInteraction[]     @relation("SubjectUserInteraction")
+  objectUserInteractions   UserInteraction[]     @relation("ObjectUserInteration")
+  externalMediaSources     ExternalMediaSource[]
+  userSports               UserSport[]
+  userSubscription         UserSubscription?
+}
+
+model UserInfo {
+  id                 Int        @id @default(autoincrement())
+  currentTeam        String?
+  previousTeam       String?
+  coach              String?
+  certification      String?
+  coachingExperience Int?
+  sportPosition      String?
+  grade              UserGrade?
+  userId             Int        @unique
+  user               User       @relation(fields: [userId], references: [id])
+  createdAt          DateTime   @default(now()) @db.Timestamptz()
+  updatedAt          DateTime   @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt          DateTime?  @db.Timestamptz()
+}
+
+model AddressInfo {
+  id        Int       @id @default(autoincrement())
+  address   String?
+  country   String?
+  city      String?
+  state     String?
+  zipCode   String?
+  longitude Float?
+  latitude  Float?
+  userId    Int       @unique
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now()) @db.Timestamptz()
+  updatedAt DateTime  @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt DateTime? @db.Timestamptz()
+}
+
+enum DeviceType {
+  WEB
+  ANDROID
+  IOS
+}
+
+model Device {
+  id        Int        @id @default(autoincrement())
+  uuid      String     @default(uuid())
+  userAgent String?
+  type      DeviceType @default(ANDROID)
+  userId    Int
+  user      User       @relation(fields: [userId], references: [id])
+  authToken String?
+  fcmToken  String?
+  createdAt DateTime   @default(now()) @db.Timestamptz()
+  updatedAt DateTime   @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt DateTime?  @db.Timestamptz()
+}
+
+enum TokenReason {
+  FORGOT_PASSWORD
+  RESET_PASSWORD
+  CHANGE_PASSWORD
+  USER_VERIFICATION
+}
+
+model Token {
+  id        Int         @id @default(autoincrement())
+  uuid      String      @default(uuid())
+  code      String?
+  reason    TokenReason
+  userId    Int?
+  meta      Json?       @db.JsonB
+  createdAt DateTime    @default(now()) @db.Timestamptz()
+  updatedAt DateTime    @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt DateTime?   @db.Timestamptz()
+  expiredAt DateTime?   @db.Timestamptz()
+  user      User?       @relation(fields: [userId], references: [id])
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+  ARCHIVE
+  OTHER
+}
+
+enum MediaStatus {
+  UPLOADING
+  READY
+  STALE
+}
+
+enum MediaAccess {
+  PUBLIC
+  PRIVATE
+}
+
+model Media {
+  id                   Int                   @id @default(autoincrement())
+  name                 String
+  extension            String
+  type                 MediaType
+  access               MediaAccess
+  size                 Float?
+  location             String?
+  path                 String
+  thumbPath            String?
+  status               MediaStatus           @default(UPLOADING)
+  meta                 Json?                 @db.JsonB
+  userId               Int?
+  createdAt            DateTime              @default(now()) @db.Timestamptz()
+  updatedAt            DateTime              @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt            DateTime?             @db.Timestamptz()
+  user                 User?                 @relation("MediaOwner", fields: [userId], references: [id])
+  users                User[]
+  certificates         Certificate[]
+  galleryMedias        GalleryMedia[]
+  reportMedias         ReportMedia[]
+  chatEventAttachments ChatEventAttachment[]
+}
+
+model UserSettings {
+  id                   Int       @id @default(autoincrement())
+  notificationsEnabled Boolean   @default(true)
+  userId               Int       @unique
+  user                 User      @relation(fields: [userId], references: [id])
+  createdAt            DateTime  @default(now()) @db.Timestamptz()
+  updatedAt            DateTime  @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt            DateTime? @db.Timestamptz()
+}
+
+enum UserOAuthType {
+  GOOGLE
+  APPLE
+  FACEBOOK
+}
+
+model UserOAuth {
+  id         Int           @id @default(autoincrement())
+  userId     Int           @unique
+  providerId String
+  type       UserOAuthType
+  createdAt  DateTime      @default(now()) @db.Timestamptz()
+  updatedAt  DateTime      @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt  DateTime?     @db.Timestamptz()
+  user       User          @relation(fields: [userId], references: [id])
+}
+
+enum NotificationReadStatus {
+  READ
+  UNREAD
+}
+
+enum NotificationModelEntityType {
+  USER
+  ATHLETE
+}
+
+enum NotificationType {
+  USER_REGISTRATION
+  USER_INTERACTION
+  NEW_MESSAGE
+}
+
+model Notification {
+  id          Int                         @id @default(autoincrement())
+  initiatorId Int
+  entityId    Int
+  entityType  NotificationModelEntityType
+  title       String
+  description String
+  meta        Json?                       @db.JsonB
+  type        NotificationType
+  createdAt   DateTime                    @default(now()) @db.Timestamptz()
+  updatedAt   DateTime                    @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt   DateTime?                   @db.Timestamptz()
+  users       UsersNotifications[]
+}
+
+model UsersNotifications {
+  id             Int                    @id @default(autoincrement())
+  receiverId     Int
+  receiver       User                   @relation(fields: [receiverId], references: [id])
+  notificationId Int
+  notification   Notification           @relation(fields: [notificationId], references: [id])
+  readStatus     NotificationReadStatus @default(UNREAD)
+  meta           Json?                  @db.JsonB
+  createdAt      DateTime               @default(now()) @db.Timestamptz()
+  updatedAt      DateTime               @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt      DateTime?              @db.Timestamptz()
+}
+
+model WorkHistory {
+  id          Int       @id @default(autoincrement())
+  companyName String
+  year        Int
+  userId      Int
+  createdAt   DateTime  @default(now()) @db.Timestamptz()
+  updatedAt   DateTime  @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt   DateTime? @db.Timestamptz()
+  user        User      @relation(fields: [userId], references: [id])
+}
+
+model EducationHistory {
+  id        Int       @id @default(autoincrement())
+  degree    String?
+  institute String
+  gpa       Float?
+  year      Int?
+  userId    Int
+  createdAt DateTime  @default(now()) @db.Timestamptz()
+  updatedAt DateTime  @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt DateTime? @db.Timestamptz()
+  user      User      @relation(fields: [userId], references: [id])
+}
+
+model Achievement {
+  id        Int       @id @default(autoincrement())
+  name      String
+  year      Int
+  userId    Int
+  createdAt DateTime  @default(now()) @db.Timestamptz()
+  updatedAt DateTime  @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt DateTime? @db.Timestamptz()
+  user      User      @relation(fields: [userId], references: [id])
+}
+
+model Certificate {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  mediaId   Int
+  user      User      @relation(fields: [userId], references: [id])
+  media     Media     @relation(fields: [mediaId], references: [id])
+  createdAt DateTime  @default(now()) @db.Timestamptz()
+  updatedAt DateTime  @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt DateTime? @db.Timestamptz()
+}
+
+model GalleryMedia {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  mediaId   Int
+  featured  Boolean   @default(false)
+  user      User      @relation(fields: [userId], references: [id])
+  media     Media     @relation(fields: [mediaId], references: [id])
+  createdAt DateTime  @default(now()) @db.Timestamptz()
+  updatedAt DateTime  @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt DateTime? @db.Timestamptz()
+}
+
+enum ReportType {
+  GENERAL
+  USER
+}
+
+enum ReportReason {
+  SCAM
+  INAPPROPRIATE
+  HARASSMENT
+  FALSE_INFO
+  PRIVACY
+  OTHER
+}
+
+model Report {
+  id             Int           @id @default(autoincrement())
+  title          String?
+  description    String?
+  reporterId     Int
+  reportedUserId Int?
+  type           ReportType    @default(GENERAL)
+  reason         ReportReason  @default(OTHER)
+  reporter       User          @relation("Reporter", fields: [reporterId], references: [id])
+  reportedUser   User?         @relation("ReportedUser", fields: [reportedUserId], references: [id])
+  medias         ReportMedia[]
+  createdAt      DateTime      @default(now()) @db.Timestamptz()
+  updatedAt      DateTime      @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt      DateTime?     @db.Timestamptz()
+}
+
+model ReportMedia {
+  id        Int       @id @default(autoincrement())
+  reportId  Int
+  mediaId   Int
+  report    Report    @relation(fields: [reportId], references: [id])
+  media     Media     @relation(fields: [mediaId], references: [id])
+  createdAt DateTime  @default(now()) @db.Timestamptz()
+  updatedAt DateTime  @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt DateTime? @db.Timestamptz()
+}
+
+enum ChatType {
+  INDIVIDUAL
+  GROUP
+}
+
+model Chat {
+  id           Int               @id @default(autoincrement())
+  title        String?
+  type         ChatType          @default(INDIVIDUAL)
+  lastEventId  Int?              @unique
+  blockedBy    Int?
+  participants ChatParticipant[]
+  events       ChatEvent[]
+  lastEvent    ChatEvent?        @relation("LastChatEvent", fields: [lastEventId], references: [id])
+  createdAt    DateTime          @default(now()) @db.Timestamptz()
+  updatedAt    DateTime          @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt    DateTime?         @db.Timestamptz()
+}
+
+model ChatParticipant {
+  id                   Int         @id @default(autoincrement())
+  chatId               Int
+  userId               Int
+  lastReadEventId      Int?
+  lastDeliveredEventId Int?
+  lastDeletedEventId   Int?
+  chat                 Chat        @relation(fields: [chatId], references: [id])
+  lastReadEvent        ChatEvent?  @relation("lastReadChatEvent", fields: [lastReadEventId], references: [id])
+  lastDeliveredEvent   ChatEvent?  @relation("lastDeliveredChatEvent", fields: [lastDeliveredEventId], references: [id])
+  lastDeletedEvent     ChatEvent?  @relation("lastDeletedChatEvent", fields: [lastDeletedEventId], references: [id])
+  events               ChatEvent[]
+  user                 User        @relation(fields: [userId], references: [id])
+  createdAt            DateTime    @default(now()) @db.Timestamptz()
+  updatedAt            DateTime    @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt            DateTime?   @db.Timestamptz()
+}
+
+model ChatEvent {
+  id                            Int                   @id @default(autoincrement())
+  content                       String?
+  chatId                        Int
+  senderParticipantId           Int
+  isFromSystem                  Boolean               @default(false)
+  chat                          Chat                  @relation(fields: [chatId], references: [id])
+  lastEventChat                 Chat?                 @relation("LastChatEvent")
+  lastReadEventParticipant      ChatParticipant[]     @relation("lastReadChatEvent")
+  lastDeliveredEventParticipant ChatParticipant[]     @relation("lastDeliveredChatEvent")
+  lastDeletedEventParticipant   ChatParticipant[]     @relation("lastDeletedChatEvent")
+  senderParticipant             ChatParticipant       @relation(fields: [senderParticipantId], references: [id])
+  attachments                   ChatEventAttachment[]
+  createdAt                     DateTime              @default(now()) @db.Timestamptz()
+  updatedAt                     DateTime              @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt                     DateTime?             @db.Timestamptz()
+}
+
+model ChatEventAttachment {
+  id        Int       @id @default(autoincrement())
+  eventId   Int
+  mediaId   Int
+  event     ChatEvent @relation(fields: [eventId], references: [id])
+  media     Media     @relation(fields: [mediaId], references: [id])
+  createdAt DateTime  @default(now()) @db.Timestamptz()
+  updatedAt DateTime  @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt DateTime? @db.Timestamptz()
+}
+
+enum UserRelationshipStatus {
+  BLOCKED
+}
+
+model UserRelationship {
+  id            Int                    @id @default(autoincrement())
+  subjectUserId Int
+  objectUserId  Int
+  status        UserRelationshipStatus
+  subjectUser   User                   @relation("SubjectUser", fields: [subjectUserId], references: [id])
+  objectUser    User                   @relation("ObjectUser", fields: [objectUserId], references: [id])
+  createdAt     DateTime               @default(now()) @db.Timestamptz()
+  updatedAt     DateTime               @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt     DateTime?              @db.Timestamptz()
+}
+
+enum UserInteractionType {
+  LIKED
+  DISLIKED
+}
+
+model UserInteraction {
+  id            Int                 @id @default(autoincrement())
+  subjectUserId Int
+  objectUserId  Int
+  type          UserInteractionType
+  subjectUser   User                @relation("SubjectUserInteraction", fields: [subjectUserId], references: [id])
+  objectUser    User                @relation("ObjectUserInteration", fields: [objectUserId], references: [id])
+  createdAt     DateTime            @default(now()) @db.Timestamptz()
+  updatedAt     DateTime            @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt     DateTime?           @db.Timestamptz()
+}
+
+enum SportType {
+  INDIVIDUAL
+  TEAM
+}
+
+enum SportGender {
+  BOY
+  GIRL
+}
+
+model Sport {
+  id          Int           @id @default(autoincrement())
+  title       String
+  type        SportType
+  sportGender SportGender[]
+  createdAt   DateTime      @default(now()) @db.Timestamptz()
+  updatedAt   DateTime      @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt   DateTime?     @db.Timestamptz()
+  sportUsers  UserSport[]
+}
+
+model UserSport {
+  id          Int           @id @default(autoincrement())
+  sportId     Int
+  userId      Int
+  sportGender SportGender[]
+  sport       Sport         @relation(fields: [sportId], references: [id])
+  user        User          @relation(fields: [userId], references: [id])
+  createdAt   DateTime      @default(now()) @db.Timestamptz()
+  updatedAt   DateTime      @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt   DateTime?     @db.Timestamptz()
+}
+
+model ExternalMediaSource {
+  id        Int       @id @default(autoincrement())
+  link      String
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now()) @db.Timestamptz()
+  updatedAt DateTime  @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt DateTime? @db.Timestamptz()
+}
+
+model SubscriptionPlan {
+  id                Int                @id @default(autoincrement())
+  iosProductId      String?
+  androidProductId  String?
+  type              Int? // 1 = PREMIUM, 2 = FREEMIUM
+  price             Float?
+  createdAt         DateTime           @default(now()) @db.Timestamptz()
+  updatedAt         DateTime           @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt         DateTime?          @db.Timestamptz()
+  userSubscriptions UserSubscription[]
+}
+
+model UserSubscription {
+  id                 Int               @id @default(autoincrement())
+  userId             Int               @unique
+  subscriptionPlanId Int?
+  startedAt          DateTime?         @db.Timestamptz()
+  expiredAt          DateTime?         @db.Timestamptz()
+  deviceType         DeviceType        @default(ANDROID)
+  user               User              @relation(fields: [userId], references: [id])
+  subscriptionPlan   SubscriptionPlan? @relation(fields: [subscriptionPlanId], references: [id])
+  createdAt          DateTime          @default(now()) @db.Timestamptz()
+  updatedAt          DateTime          @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt          DateTime?         @db.Timestamptz()
+}
+
+model AppSettings {
+  id                 Int       @id @default(autoincrement())
+  termsAndConditions String?   @db.Text
+  privacyPolicy      String?   @db.Text
+  aboutApp           String?   @db.Text
+  createdAt          DateTime  @default(now()) @db.Timestamptz()
+  updatedAt          DateTime  @default(now()) @updatedAt @db.Timestamptz()
+  deletedAt          DateTime? @db.Timestamptz()
+}

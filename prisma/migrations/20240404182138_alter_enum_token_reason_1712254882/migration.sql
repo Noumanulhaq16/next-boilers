@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "TokenReason" ADD VALUE 'USER_VERIFICATION';

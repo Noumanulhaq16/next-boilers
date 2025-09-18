@@ -1,0 +1,8 @@
+{
+    
+    "chat.already_exist": "Chat already exist",
+    "chat.not_found" : "Chat not found",
+    "chat_event.not_found" : "Chat event not found",
+    "chat.unknown_error": "There was an error performing operation on the chat. Please try again"
+  
+}

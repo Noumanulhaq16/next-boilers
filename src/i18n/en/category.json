@@ -1,0 +1,8 @@
+{
+    "category.not_found": "Category not found",
+    "category.unknown_error": "There was an error performing operation on the category. Please try again",
+    "preference.unknown_error": "There was an error performing operation on the preferences. Please try again",
+    "category.course_exist_forbidden": "Unable to delete this category as it has been used in courses",
+    "category.users_exist_forbidden": "Unable to delete this category as it has been set as a preference by users",
+    "category.not_preferred_forbidden": "Please select this category as your preferred one"
+}

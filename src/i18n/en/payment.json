@@ -1,0 +1,23 @@
+{
+    "payment_settings.invalid": "Invalid payment settings",
+    "payment.already_exist": "You have already made the payment",
+    "payment.not_found": "Payment not found",
+    "payouts.unknown_error": "Something went wrong when performing operation on payouts",
+    "payment.no_paypalId": "Please enter your paypal details from the settings",
+    "payment.already_onboarded_account": "Account already exist",
+    "payment.payment_method_not_found": "No payment method found",
+
+    "payment.already_exist_purchase_token": "Purchase token already exist",
+
+    "payment.subscription_non_expired_different_device_type": "Please cancel the previously purchased subscription on android or iOS first and then wait for the end of this billing period",
+    "payment.purchase_not_found": "Purchase not found",
+    "payment.subscription_plan_not_found": "Subscription plan not found",
+    "payment.subscription_pending": "Subscription is in pending state. You will be entitled to the product after confirmation",
+    "payment.subscription_success": "Subscription successful",
+    "payment.subscription_failed": "Subscription failed",
+
+    "payment.in_app_product_not_found": "In-app Product not found",
+    "payment.in_app_product_already_consumed": "In-app Product already consumed",
+    "payment.subscription_not_found": "Subscription not found",
+    "payment.purchase_failed": "Purchase failed"
+}

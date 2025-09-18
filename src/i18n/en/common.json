@@ -1,0 +1,17 @@
+{
+    "welcome": "Welcome to NestJS API",
+
+    "common.success": "Success",
+    "common.updated": "Updated",
+    "common.deleted": "Deleted",
+    "common.created": "Created",
+    "common.verified": "Verified",
+
+    "errors.not_found": "Resource not found",
+    "errors.forbidden": "Access not allowed",
+    "errors.fatal": "Something went wrong",
+    "errors.bad_request": "Bad request",
+    "errors.unauthorized": "Unauthorized resource",
+    "errors.invalid_values": "Invalid values for ${values}",
+    "errors.unindentified": "Unidentified error occurred"
+}

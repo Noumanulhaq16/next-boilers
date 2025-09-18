@@ -1,0 +1,7 @@
+{
+    
+    "report.already_exist": "You have already reported",
+    "report.not_found" : "Report not found",
+    "report.unknown_error": "There was an error performing operation on the report. Please try again"
+  
+}

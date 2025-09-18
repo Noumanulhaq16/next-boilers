@@ -1,0 +1,32 @@
+version: '3.7'
+services:
+    db:
+        image: 'kartoza/postgis:14-3.2'
+        container_name: athlinc.db
+        ports:
+            - 5432:5432
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASS=click123
+            - POSTGRES_DB=athlinc
+            - EXTRA_CONF=log_statement='all'
+        restart: always
+        volumes:
+            - 'athlinc_postgres_data:/var/lib/postgresql'
+
+    redis:
+        container_name: athlinc.redis
+        image: 'bitnami/redis:6.0.16'
+        ports:
+            - 6379:6379
+        environment:
+            - ALLOW_EMPTY_PASSWORD=yes
+        restart: always
+        volumes:
+            - 'athlinc_redis_data:/bitnami'
+
+volumes:
+    athlinc_postgres_data:
+        external: true
+    athlinc_redis_data:
+        external: true
